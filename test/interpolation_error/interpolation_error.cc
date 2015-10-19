@@ -19,7 +19,10 @@
 #include <iomanip>
 #include "G4ThreeVector.hh"
 
-#include "ErrorComputer2.hh"
+#include <vector>
+#include "Interpolant.hh"
+
+//#include "ErrorComputer2.hh"
 
 using namespace std;
 using namespace CLHEP;
