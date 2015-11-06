@@ -148,6 +148,11 @@ void MagIntegratorStepper_byTime<BaseStepper>::Stepper(const G4double yInput[],
          // the BaseStepper::ComputeRightHandSide() method.
          BaseStepper::ComputeRightHandSide(yOutput, nextFunctionEvaluation);
 
+
+         // previous function call should not be counted as part of total function calls:
+         BaseStepper::mTracker -> no_function_calls_used_by_DistChord += 1;
+
+
          // Now we have to undo the effect of Mag_UsualEqRhs_IntegrateByTime
          // which will scale nextFunctionEvaluation back to momentum coordinates,
          // so we have to scale back to velocity coordinates before we store it:

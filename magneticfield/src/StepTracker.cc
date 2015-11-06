@@ -132,11 +132,11 @@ void StepTracker::record_if_post_intersection_point( G4FieldTrack& possible_post
          buffer.pop_back(); // Get rid of overshoot point (overshot the intersection point).
          no_function_calls_buffer.pop_back(); // Similar as line above.
       } while ( buffer.size() > 0 &&
-            passed_curve_length <= buffer.back().at(ENDPOINT_BASE_INDEX + 1) );
+            passed_curve_length <= buffer.back().at(ENDPOINT_BASE_INDEX + 1) ); // TODO: check if this should be a < instead of a <=
 
       overshoot_buffer.push_back( buffer_vector );
       no_function_calls_overshoot_buffer.push_back( no_function_calls_buffer.back() );
-      no_function_calls_buffer.pop_back();
+      //no_function_calls_buffer.pop_back();
 
 
       G4double velocity;
@@ -208,7 +208,7 @@ void StepTracker::outputBuffer(char *outfile_name,
    if (no_function_calls_outfile_name != 0) {
       ofstream no_function_calls_outfile( no_function_calls_outfile_name, ios::out );
       for (int i = 0; i < getBufferLength(); i ++)
-         no_function_calls_outfile << no_function_calls_buffer[i] << endl;
+         no_function_calls_outfile << no_function_calls_buffer.at(i) << endl;
 
       no_function_calls_outfile.close();
    }
@@ -278,7 +278,7 @@ void StepTracker::RecordResultOfStepper( G4double yIn0[], G4double dydx0[],
       buffer[last_index][0] = last_time_length;
       buffer[last_index][1] = last_curve_length;
 
-      if (no_function_calls != -1)
+      if (no_function_calls != -1)  // Never happens though
 
 #ifdef IGNORING_DIST_CHORD_FUNCTION_CALLS
 
