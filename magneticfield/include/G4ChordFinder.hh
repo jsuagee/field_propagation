@@ -152,12 +152,12 @@ class G4ChordFinder
       inline   G4double GetFractionNextEstimate();  // Originally 0.980
       inline   G4double GetMultipleRadius();        // No original value
         //  Parameters for adapting performance ... use with great care
-
+/*
 #ifdef TRACKING
       inline StepTracker * getTracker() { return mTracker; }
       inline void setTracker( StepTracker * tracker) { mTracker = tracker; }
 #endif
-
+*/
 
 
 
@@ -238,11 +238,11 @@ class G4ChordFinder
       //G4double mass;
 
       //G4double *pos_mom_vals;
-
+/*
 #ifdef TRACKING
       StepTracker *mTracker;
 #endif
-
+*/
 
 
 };

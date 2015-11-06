@@ -130,6 +130,7 @@ class G4MagIntegratorStepper
 
      virtual void SetEquationOfMotion(G4EquationOfMotion* newEquation);
 
+
 #ifdef TRACKING
       StepTracker * getTracker();
       void setTracker(StepTracker *tracker);

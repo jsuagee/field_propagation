@@ -103,11 +103,13 @@ class G4MagInt_Driver
      inline void GetDerivatives( const G4FieldTrack &y_curr,     // const, INput
                                        G4double    dydx[]   );  //       OUTput
 
+
+    /*
 #ifdef TRACKING
    inline StepTracker * getTracker() { return mTracker; }
    inline void setTracker( StepTracker * tracker) { mTracker = tracker; }
 #endif
-
+*/
      // Accessors.
 
 
@@ -270,11 +272,11 @@ class G4MagInt_Driver
      G4int  fVerboseLevel;   // Verbosity level for printing (debug, ..)
         // Could be varied during tracking - to help identify issues
 
-
+/*
 #ifdef TRACKING
      StepTracker *mTracker;
 #endif
-
+*/
 
 
 };

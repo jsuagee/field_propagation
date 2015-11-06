@@ -70,10 +70,11 @@ G4ChordFinder::G4ChordFinder(G4MagInt_Driver* pIntegrationDriver)
   // Simple constructor -- it does not create equation
   fIntgrDriver= pIntegrationDriver;
 
+   /*
 #ifdef TRACKING
   mTracker = fIntgrDriver -> getTracker(); // This will only catch the StepTracker if one was given to pIntegrationDriver
 #endif
-
+*/
 
   fAllocatedStepper= false;
 
@@ -134,11 +135,11 @@ G4ChordFinder::G4ChordFinder( G4MagneticField*        theMagField,
 
   fIntgrDriver = new G4MagInt_Driver(stepMinimum, pItsStepper, 
                                      pItsStepper->GetNumberOfVariables() );
-
+/*
 #ifdef TRACKING
   mTracker = fIntgrDriver -> getTracker();
 #endif
-
+*/
 }
 
 
@@ -213,7 +214,7 @@ G4ChordFinder::AdvanceChordLimited( G4FieldTrack& yCurrent,
 {
 
 #ifdef TRACKING
-   mTracker -> set_within_AdvanceChordLimited( true );
+   fIntgrDriver -> GetStepper() -> getTracker() -> set_within_AdvanceChordLimited( true );
 #endif
 
   G4double dydx_temp[12];
@@ -225,7 +226,8 @@ G4ChordFinder::AdvanceChordLimited( G4FieldTrack& yCurrent,
   G4double  startCurveLen= yCurrent.GetCurveLength();
 
 #ifdef TRACKING
-   mTracker -> record_if_post_intersection_point( yCurrent, startCurveLen );
+   fIntgrDriver -> GetStepper() -> getTracker() -> initialize_StepTracker(&yCurrent);
+   fIntgrDriver -> GetStepper() -> getTracker() -> record_if_post_intersection_point( yCurrent, startCurveLen );
 #endif
 
 
@@ -248,7 +250,8 @@ G4ChordFinder::AdvanceChordLimited( G4FieldTrack& yCurrent,
 
 #ifdef TRACKING                  // If the result of FindNextChord() will be accepted, then we want to update the time.
 
-     mTracker -> update_time_arclength( stepPossible / ( mTracker -> last_velocity() ), stepPossible );
+     fIntgrDriver -> GetStepper() -> getTracker()  -> update_time_arclength( stepPossible
+                  / ( fIntgrDriver -> GetStepper() -> getTracker()  -> last_velocity() ), stepPossible );
 #endif
 
   }
@@ -274,7 +277,7 @@ G4ChordFinder::AdvanceChordLimited( G4FieldTrack& yCurrent,
 #ifdef TRACKING
    //mTracker -> set_last_curve_length( startCurveLen + stepPossible );
    //mTracker -> set_last_curve_length( stepPossible );
-   mTracker -> set_within_AdvanceChordLimited( false );
+   fIntgrDriver -> GetStepper() -> getTracker()  -> set_within_AdvanceChordLimited( false );
 #endif
 
 

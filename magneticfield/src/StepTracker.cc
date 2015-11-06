@@ -61,11 +61,15 @@ using namespace std;
 #define TOL 0.00000001
 
 
-StepTracker::StepTracker(G4double beginning[BUFFER_COLUMN_LEN]) {
+//StepTracker::StepTracker(G4double beginning[BUFFER_COLUMN_LEN]) {
    // beginning must be of the form
    // {time, arclength, position[1..3], momentum[1..3], RHS[1..3]}
 
-   first_velocity = G4ThreeVector( beginning[MOMENTUM_SLOT], beginning[MOMENTUM_SLOT + 1], beginning[MOMENTUM_SLOT + 2] ).mag();
+   // Set this later in set_first_velocity() called from G4ChordFinder::AccurateAdvance()
+   //first_velocity = G4ThreeVector( beginning[MOMENTUM_SLOT], beginning[MOMENTUM_SLOT + 1], beginning[MOMENTUM_SLOT + 2] ).mag();
+
+
+StepTracker::StepTracker() {
 
    last_time_val_was_accepted = true; // There was no last time val at time of creation.
    armed = false;
@@ -84,7 +88,16 @@ StepTracker::~StepTracker() {
 }
 
 
-void StepTracker::record_if_post_intersection_point( G4FieldTrack& possible_post_intersection_point,
+void StepTracker::initialize_StepTracker(G4FieldTrack *initialFieldTrack) {
+
+   if (getBufferLength() == 0) {
+      //G4ThreeVector Position = initialFieldTrack -> GetPosition();
+      G4ThreeVector Momentum = initialFieldTrack->GetMomentum();
+      first_velocity = Momentum.mag() / mass; // mass here is mass at rest.
+   }
+}
+
+void StepTracker::record_if_post_intersection_point( G4FieldTrack& possible_post_intersection_point, //TODO: take this argument out, it isn't used
                                                      G4double passed_curve_length ) {
 
    assert( last_time_val_was_accepted );
@@ -124,10 +137,6 @@ void StepTracker::record_if_post_intersection_point( G4FieldTrack& possible_post
       overshoot_buffer.push_back( buffer_vector );
       no_function_calls_overshoot_buffer.push_back( no_function_calls_buffer.back() );
       no_function_calls_buffer.pop_back();
-
-
-
-      //assert( passed_curve_length != buffer.back().at(ENDPOINT_BASE_INDEX + 1) );
 
 
       G4double velocity;

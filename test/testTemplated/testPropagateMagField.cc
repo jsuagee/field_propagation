@@ -653,8 +653,8 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 
 
     // Added by J. Suagee: (EquationOfMotion was not getting set in a constructor somewhere)
-    ( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper())
-            ->SetEquationOfMotion(fEquation);
+    //( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper())
+    //        ->SetEquationOfMotion(fEquation);
 
     if (stepper_type == 0)
        dynamic_cast< MagIntegratorStepper_byTime<MuruaRKN5459>* >
@@ -747,6 +747,7 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 
 #ifdef TRACKING
 
+   /*
        G4double beginning[10] = { Position.x(), Position.y(), Position.z(),
                     UnitMomentum.x() * momentum, UnitMomentum.y() * momentum,
                     UnitMomentum.z() * momentum, 0., 0., 0., 0. };
@@ -764,21 +765,26 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
        StepTracker *myStepTracker;
 
        myStepTracker = new StepTracker( stepTracker_1st_entry );
+   */
+       StepTracker *myStepTracker = new StepTracker();
 
 
        ( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper() )
            -> setTracker(myStepTracker);
-
+       /*
        ( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver() )
                -> setTracker(myStepTracker);
+
 
        ( pMagFieldPropagator->GetChordFinder() )
                -> setTracker(myStepTracker);
 
 
        myStepTracker -> set_stepper_pointer( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper() );
+       */
 
-       myStepTracker -> set_mass( proton_mass_c2 ); // Not used?? (Check)
+       myStepTracker -> set_mass( proton_mass_c2 ); // Not used?? (Check) Should use relativistic mass
+                                                      // because it is used to get starting velocity
 
 #endif
 
@@ -899,7 +905,7 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
                                       tPMF_overshoot_filename);
     }
 
-    delete Rhs;
+    //delete Rhs;
 
     delete myStepTracker;
 #endif

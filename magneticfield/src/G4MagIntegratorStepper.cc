@@ -55,10 +55,12 @@ void G4MagIntegratorStepper::ComputeRightHandSide( const G4double y[], G4double 
   this->RightHandSide( y, dydx );
 }
 
+
 #ifdef TRACKING
 StepTracker * G4MagIntegratorStepper::getTracker() { return mTracker; }
 void G4MagIntegratorStepper::setTracker(StepTracker *tracker) { mTracker = tracker; }
 #endif
+
 
 // Made non-inline and virtual because steppers with aux steppers need to be able to
 // set the equation of motion for their aux steppers, and might as well do that in the
