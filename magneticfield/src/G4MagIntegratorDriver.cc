@@ -254,6 +254,10 @@ G4MagInt_Driver::AccurateAdvance(G4FieldTrack& y_current,
                     / ( pIntStepper -> getTracker() -> last_velocity() ), hdid );
 #endif
 
+#ifdef FSAL
+       pIntStepper -> notify_of_accepted_step();
+#endif
+
       lastStepSucceeded= (hdid == h);   
 #ifdef G4DEBUG_FIELD
       if (dbg>2) {
@@ -279,6 +283,9 @@ G4MagInt_Driver::AccurateAdvance(G4FieldTrack& y_current,
                      / ( pIntStepper -> getTracker() -> last_velocity() ), h );
 #endif
 
+#ifdef FSAL
+       pIntStepper -> notify_of_accepted_step();
+#endif
 
 
 #ifdef G4FLD_STATS

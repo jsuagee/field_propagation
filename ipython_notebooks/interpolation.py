@@ -90,8 +90,11 @@ def set_DIRs( binaries, data = './', plot_graphics = './'):
    G.Binary_DIR = binaries
    G.Data_DIR = data
    G.Plot_Graphics_DIR = plot_graphics
-   G.tPMF_program = G.Binary_DIR + 'testTemplated/testPropagateMagField'
-   G.interpolation_error_program = G.Binary_DIR + 'interpolation_error/interpolation_error'
+   # G.tPMF_program = G.Binary_DIR + 'testTemplated/testPropagateMagField'
+   # G.interpolation_error_program = G.Binary_DIR + 'interpolation_error/interpolation_error'
+   G.tPMF_program = G.Binary_DIR + 'testPropagateMagField'
+   G.interpolation_error_program = G.Binary_DIR + 'interpolation_error'
+
 
 def print_all_default_values():
    print 'Binary_DIR = ' + str(G.Binary_DIR)
@@ -538,10 +541,11 @@ def plot_3dtrajectories( stepper_list, ComputeStep_len, No_steps, tube_rad = 6, 
       mylab.plot3d(X,Y,Z, tube_radius = tube_rad, color = colors[counter])
       counter += 1
    #
-   X = [baseline_trajectory[i][2] for i in range(G.baseline_number_full_steps)]
-   Y = [baseline_trajectory[i][3] for i in range(G.baseline_number_full_steps)]
-   Z = [baseline_trajectory[i][4] for i in range(G.baseline_number_full_steps)]
-   mylab.plot3d(X,Y,Z, tube_radius = tube_rad, color = (0.,0.,1.))
+   if with_baseline:
+      X = [baseline_trajectory[i][2] for i in range(G.baseline_number_full_steps)]
+      Y = [baseline_trajectory[i][3] for i in range(G.baseline_number_full_steps)]
+      Z = [baseline_trajectory[i][4] for i in range(G.baseline_number_full_steps)]
+      mylab.plot3d(X,Y,Z, tube_radius = tube_rad, color = (0.,0.,1.))
    #
    mylab.show()
    
