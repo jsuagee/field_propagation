@@ -135,7 +135,9 @@ def compute_new_baseline_with_tPMF(file_store_info, propagator_init_data = None)
       propagator_init_data['max_step_size'] = 0.1
    #
    #stepper_type = propagator_init_data['stepper_type']
-   stepper_type = 1 #Fine45 with 4th order interpolation
+   #Let's try MuruaRKN5459 as baseline stepper
+   #stepper_type = 1 #Fine45 with 4th order interpolation
+   stepper_type = 0
    ComputeStep_size = propagator_init_data['ComputeStep_length']
    No_ComputeSteps = propagator_init_data['No_ComputeSteps']
    #start_pos_mom = propagator_init_data['start_pos_mom']

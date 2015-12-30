@@ -146,6 +146,9 @@ G4double  MuruaRKN5459::DistChord()   const {
 
    // Implementation borrowed from G4CashKarpRK45:
 
+   /*
+
+
    G4double distLine, distChord;
      G4ThreeVector initialPoint, finalPoint, midPoint;
 
@@ -182,8 +185,8 @@ G4double  MuruaRKN5459::DistChord()   const {
      //      -> GetCountCalls() - no_function_calls_before_aux_stepper;
 
      return distChord;
-
-   /* Ideal implementation, using interpolant. But we don't have the interpolant working yet.
+   */
+   // Ideal implementation, using interpolant. But we don't have the interpolant working yet.
    G4double distLine, distChord;
    // Store last initial and final points (they will be overwritten in self-Stepper call!)
 
@@ -192,6 +195,8 @@ G4double  MuruaRKN5459::DistChord()   const {
                                           fLastFinalVector, fLastDyDx,
                                           fNextDyDx, fLastStepLength );
    }
+
+   //position_interpolant -> InterpolatePosition( 0.4, fMidVector ); // Works better but why?
 
    position_interpolant -> InterpolatePosition( 0.5, fMidVector );
 
@@ -212,7 +217,7 @@ G4double  MuruaRKN5459::DistChord()   const {
    }
    return distChord;
 
-   */
+
 
 }
 
@@ -222,6 +227,9 @@ void MuruaRKN5459::Stepper(  const G4double y[],
                   G4double h,
                   G4double yout[],
                   G4double yerr[] ) {
+
+   position_interpolant -> DeInitialize();
+
 
    int k;
 
