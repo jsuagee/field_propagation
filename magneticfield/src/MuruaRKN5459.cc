@@ -139,84 +139,81 @@ void MuruaRKN5459::ComputeRhsWithStoredB( const G4double y[],
 
 G4double  MuruaRKN5459::DistChord()   const {
 
+   if ( !mTracker->get_within_AdvanceChordLimited() ) {
+      //G4int no_function_calls_before_aux_stepper =
+      //      (( G4CachedMagneticField* )( mTracker -> getStepper() -> GetEquationOfMotion() -> GetFieldObj() ))
+      //                                            -> GetCountCalls();
 
-   //G4int no_function_calls_before_aux_stepper =
-   //      (( G4CachedMagneticField* )( mTracker -> getStepper() -> GetEquationOfMotion() -> GetFieldObj() ))
-   //                                            -> GetCountCalls();
-
-   // Implementation borrowed from G4CashKarpRK45:
-
-   /*
+      // Implementation borrowed from G4CashKarpRK45:
 
 
-   G4double distLine, distChord;
-     G4ThreeVector initialPoint, finalPoint, midPoint;
 
-     // Store last initial and final points (they will be overwritten in self-Stepper call!)
-     initialPoint = G4ThreeVector( fLastInitialVector[0],
+
+      G4double distLine, distChord;
+      G4ThreeVector initialPoint, finalPoint, midPoint;
+
+      // Store last initial and final points (they will be overwritten in self-Stepper call!)
+      initialPoint = G4ThreeVector(fLastInitialVector[0],
                                    fLastInitialVector[1], fLastInitialVector[2]);
-     finalPoint   = G4ThreeVector( fLastFinalVector[0],
-                                   fLastFinalVector[1],  fLastFinalVector[2]);
+      finalPoint = G4ThreeVector(fLastFinalVector[0],
+                                 fLastFinalVector[1], fLastFinalVector[2]);
 
-     // Do half a step using StepNoErr
+      // Do half a step using StepNoErr
 
-     fAuxStepper->Stepper( fLastInitialVector, fLastDyDx, 0.5 * fLastStepLength,
-              fMidVector,   fMidError );
+      fAuxStepper->Stepper(fLastInitialVector, fLastDyDx, 0.5 * fLastStepLength,
+                           fMidVector, fMidError);
 
-     midPoint = G4ThreeVector( fMidVector[0], fMidVector[1], fMidVector[2]);
+      midPoint = G4ThreeVector(fMidVector[0], fMidVector[1], fMidVector[2]);
 
-     // Use stored values of Initial and Endpoint + new Midpoint to evaluate
-     //  distance of Chord
-
-
-     if (initialPoint != finalPoint)
-     {
-        distLine  = G4LineSection::Distline( midPoint, initialPoint, finalPoint );
-        distChord = distLine;
-     }
-     else
-     {
-        distChord = (midPoint-initialPoint).mag();
-     }
+      // Use stored values of Initial and Endpoint + new Midpoint to evaluate
+      //  distance of Chord
 
 
-     //mTracker -> no_function_calls_used_by_DistChord +=
-     //      (( G4CachedMagneticField* )( mTracker -> getStepper() -> GetEquationOfMotion() -> GetFieldObj() ))
-     //      -> GetCountCalls() - no_function_calls_before_aux_stepper;
+      if (initialPoint != finalPoint) {
+         distLine = G4LineSection::Distline(midPoint, initialPoint, finalPoint);
+         distChord = distLine;
+      }
+      else {
+         distChord = (midPoint - initialPoint).mag();
+      }
 
-     return distChord;
-   */
-   // Ideal implementation, using interpolant. But we don't have the interpolant working yet.
-   G4double distLine, distChord;
-   // Store last initial and final points (they will be overwritten in self-Stepper call!)
 
-   if (! position_interpolant -> IsInitialized_Position() ) {
-      position_interpolant -> Initialize( fLastInitialVector,
+      //mTracker -> no_function_calls_used_by_DistChord +=
+      //      (( G4CachedMagneticField* )( mTracker -> getStepper() -> GetEquationOfMotion() -> GetFieldObj() ))
+      //      -> GetCountCalls() - no_function_calls_before_aux_stepper;
+
+      return distChord;
+   }
+   else {
+      // Ideal implementation, using interpolant. But we don't have the interpolant working yet.
+      G4double distLine, distChord;
+      // Store last initial and final points (they will be overwritten in self-Stepper call!)
+
+      if (!position_interpolant->IsInitialized_Position()) {
+         position_interpolant->Initialize(fLastInitialVector,
                                           fLastFinalVector, fLastDyDx,
-                                          fNextDyDx, fLastStepLength );
+                                          fNextDyDx, fLastStepLength);
+      }
+
+      //position_interpolant -> InterpolatePosition( 0.4, fMidVector ); // Works better but why?
+
+      position_interpolant->InterpolatePosition(0.5, fMidVector);
+
+
+      // Should probably make these vectors class variables.
+      G4ThreeVector midPoint(fMidVector[0], fMidVector[1], fMidVector[2]);
+      G4ThreeVector initialPoint(fLastInitialVector[0], fLastInitialVector[1], fLastInitialVector[2]);
+      G4ThreeVector finalPoint(fLastFinalVector[0], fLastFinalVector[1], fLastFinalVector[2]);
+
+      if (initialPoint != finalPoint) {
+         distLine = G4LineSection::Distline(midPoint, initialPoint, finalPoint);
+         distChord = distLine;
+      }
+      else {
+         distChord = (midPoint - initialPoint).mag();
+      }
+      return distChord;
    }
-
-   //position_interpolant -> InterpolatePosition( 0.4, fMidVector ); // Works better but why?
-
-   position_interpolant -> InterpolatePosition( 0.5, fMidVector );
-
-
-   // Should probably make these vectors class variables.
-   G4ThreeVector midPoint( fMidVector[0], fMidVector[1], fMidVector[2] );
-   G4ThreeVector initialPoint( fLastInitialVector[0], fLastInitialVector[1], fLastInitialVector[2] );
-   G4ThreeVector finalPoint( fLastFinalVector[0], fLastFinalVector[1], fLastFinalVector[2] );
-
-   if (initialPoint != finalPoint)
-   {
-     distLine  = G4LineSection::Distline( midPoint, initialPoint, finalPoint );
-     distChord = distLine;
-   }
-   else
-   {
-     distChord = (midPoint-initialPoint).mag();
-   }
-   return distChord;
-
 
 
 }

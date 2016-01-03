@@ -198,6 +198,10 @@ void FineRKNG45::Stepper( const G4double y[],
 
 
 G4double  FineRKNG45::DistChord()   const {
+
+
+
+
    G4double distLine, distChord;
    // Store last initial and final points (they will be overwritten in self-Stepper call!)
 

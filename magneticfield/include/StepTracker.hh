@@ -41,7 +41,7 @@ using namespace std;
 #define POSITION_SLOT 2
 #define MOMENTUM_SLOT 5
 #define RHS_SLOT 8
-
+#define NUMBER_RHS_VARIABLES 6
 #else
 #define BUFFER_COLUMN_LEN 22 // room for start point and end point of each step
 // plus time/arclength entries for each.
@@ -50,6 +50,8 @@ using namespace std;
 #define POSITION_SLOT 2
 #define MOMENTUM_SLOT 5
 #define RHS_SLOT 8
+#define NUMBER_RHS_VARIABLES 3
+
 #endif
 
 

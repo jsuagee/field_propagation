@@ -10,10 +10,6 @@
 //   http://geant4.org/license
 
 #include "StepTracker.hh"
-
-
-
-//#include <iostream>
 #include <fstream>
 #include <vector>
 using namespace std;
@@ -21,44 +17,18 @@ using namespace std;
 
 #include "G4ThreeVector.hh"
 
-
-#ifdef INTENDED_FOR_ERROR_BY_STEPPER_PROGRAM
-
-#define BUFFER_COLUMN_LEN 28 // room for start point and end point of each step
-                             // plus time/arclength entries for each.
-
-#define ENDPOINT_BASE_INDEX 14
-#define POSITION_SLOT 2
-#define MOMENTUM_SLOT 5
-#define RHS_SLOT 8
-
-
-#define NUMBER_RHS_VARIABLES 6
-
-
-#else
-#define BUFFER_COLUMN_LEN 22 // room for start point and end point of each step
-                             // plus time/arclength entries for each.
-
-#define ENDPOINT_BASE_INDEX 11
-#define POSITION_SLOT 2
-#define MOMENTUM_SLOT 5
-#define RHS_SLOT 8
-
-#define NUMBER_RHS_VARIABLES 3
-
-
-#endif
-
-
 #ifndef G4CACHED_MAGNETIC_FIELD_DEF
 #include "G4CachedMagneticField.hh"
 #endif
 
-// For temporary testing with Murua (because interpolation doesn't work for it yet).
+// For temporary testing with any future Nystrom stepper that rely upon an auxillary
+// stepper for DistChord(). Use to profile how many function evaluations
+// would be used by the stepper if interpolation methods were being used
+// inside of DistChord() instead of an auxillary stepper.
 #define IGNORING_DIST_CHORD_FUNCTION_CALLS
 
-#define TOL 0.00000001
+
+//#define TOL 0.00000001
 
 
 //StepTracker::StepTracker(G4double beginning[BUFFER_COLUMN_LEN]) {
