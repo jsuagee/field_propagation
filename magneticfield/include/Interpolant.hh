@@ -14,14 +14,16 @@
 
 class Interpolant {
 public:
-   Interpolant() {
+   Interpolant(int num_vars = 6) {
+      dim = num_vars / 2;
       position_polynomials_constructed = velocity_polynomials_constructed = false; } // For beginning of run.
 
    Interpolant(const G4double y0in[],
                const G4double y1in[],
                const G4double F0[],
                const G4double F1[],
-               G4double h);
+               G4double h,
+               int num_vars = 6);
 
 
    virtual ~Interpolant() {};
@@ -49,6 +51,8 @@ private:
    G4double p1[3], p2[3], p3[3], p4[3], p5[3];
    G4double q1[3], q2[3], q3[3], q4[3];
 
+   int dim; // Number of spacial (or Momentum space) variables.
+   
    bool position_polynomials_constructed;
    bool velocity_polynomials_constructed;
 
