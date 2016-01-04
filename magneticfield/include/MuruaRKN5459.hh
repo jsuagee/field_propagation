@@ -11,8 +11,8 @@
 #ifndef MAGNETICFIELD_INCLUDE_MURUARKN5459_HH_
 #define MAGNETICFIELD_INCLUDE_MURUARKN5459_HH_
 
-#define NO_STATE_VARIABLES 12
-#define NO_INTEGRATION_VARIABLES 6
+#define NO_STATE_VARIABLES 12          // Used for upper bound of statically
+#define NO_INTEGRATION_VARIABLES 6     // allocated array
 
 
 
@@ -24,8 +24,11 @@
 class MuruaRKN5459: public G4MagIntegratorStepper {
 public:
    MuruaRKN5459(G4EquationOfMotion *EqRhs,
-         G4int numberOfVariables,
-         G4bool primary = true);
+         G4int numberOfVariables = 6,
+         G4bool primary = true);    // Still use an auxilary stepper when
+                                    // encountering an intersection pt.
+                                    // Because it is more accurate than
+                                    // interpolantion method.
    virtual ~MuruaRKN5459();
 
    virtual void Stepper(  const G4double y[],
@@ -34,9 +37,7 @@ public:
                   G4double yout[],
                   G4double yerr[] ) ;
 
-   void ComputeRhsWithStoredB(const G4double y[],
-         //const G4double B[3],
-         G4double Rhs[] );
+   void ComputeRhsWithStoredB(const G4double y[], G4double Rhs[] );
 
    G4double  DistChord()   const;
    G4int IntegratorOrder() const {return 4; }
@@ -48,6 +49,8 @@ public:
 private:
 
    G4bool primary;
+
+   int dim; // Number of spacial (or Momentum space) variables.
 
    G4double
    a21,

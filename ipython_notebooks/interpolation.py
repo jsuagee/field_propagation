@@ -78,8 +78,10 @@ G.default_quadropole_field_strength = 1.0 # is multiplied by 10.*tesla/(50.*cm
 G.default_is_cached = False
 G.default_cache_distance = 0.0
 
-# Whether geometry is on (intesection calculator):
-G.default_is_geometry_on = True
+# Whether geometry is on (intersection calculator):
+#G.default_is_geometry_on = True
+G.default_is_geometry_on = False
+
 
 G.mass = 1049.020001226783279 # this is proton_mass_c2 (change as necessary)
 
@@ -135,9 +137,7 @@ def compute_new_baseline_with_tPMF(file_store_info, propagator_init_data = None)
       propagator_init_data['max_step_size'] = 0.1
    #
    #stepper_type = propagator_init_data['stepper_type']
-   #Let's try MuruaRKN5459 as baseline stepper
-   #stepper_type = 1 #Fine45 with 4th order interpolation
-   stepper_type = 0
+   stepper_type = 1 #Fine45 with 4th order interpolation
    ComputeStep_size = propagator_init_data['ComputeStep_length']
    No_ComputeSteps = propagator_init_data['No_ComputeSteps']
    #start_pos_mom = propagator_init_data['start_pos_mom']
@@ -412,7 +412,7 @@ def mom_relative_error_entry(A, A_tPMF, i):
    return mom_mag(A[i]) / math.sqrt( p[0]**2 + p[1]**2 + p[2]**2 ) # mass scaling on both sides of the '/' so cancel out.
 # End Helper functions.
 
-def plot_relative_errors(stepper_list, with_function_evaluation_count = False, save_file_name = None, tPMF_baseline = True):
+def plot_relative_errors(stepper_list, with_function_evaluation_count = False, with_momentum_errs = True, save_file_name = None, tPMF_baseline = True):
    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
    if len(stepper_list) > len(colors):
       print "Not enough colors to plot all steppers. (There are 8 colors)"
@@ -444,38 +444,38 @@ def plot_relative_errors(stepper_list, with_function_evaluation_count = False, s
       plt.savefig(G.Plot_Graphics_DIR + save_file_name + '_position_rel_error.png')
    plt.show()
    #
-   plt.figure()
-   counter = 0
-   for A, function_evals, trajectory in steppers_big_data_list:
-       #V = [ G.mass*math.sqrt( sum([A[i][2 + k]**2 for k in range(3,6)]) ) for i in range(cutoff_list[counter])]
-       V = [mom_relative_error_entry(A, trajectory, i) for i in range(cutoff_list[counter])]
-       plt.plot( [A[i][1] for i in range(cutoff_list[counter])], V, colors[counter]  )
-       counter += 1
-   plt.title('Momentum Error vs. ArcLength, initial step dist.: ' + str(G.default_ComputeStep_len))
-   patches = []
-   for i in range(len(stepper_choices)):
-       patches += [mpatches.Patch(color = colors[i], label = stepper_choices[i][1])]
-   plt.legend( patches, [stepper_choices[i][1] for i in range(len(stepper_choices))], loc = 2)
-   if save_file_name != None:
-      plt.savefig(G.Plot_Graphics_DIR + save_file_name + '_momentum_rel_error.png')
-   plt.show()
+   if with_momentum_errs == True:
+      plt.figure()
+      counter = 0
+      for A, function_evals, trajectory in steppers_big_data_list:
+          #V = [ G.mass*math.sqrt( sum([A[i][2 + k]**2 for k in range(3,6)]) ) for i in range(cutoff_list[counter])]
+          V = [mom_relative_error_entry(A, trajectory, i) for i in range(cutoff_list[counter])]
+          plt.plot( [A[i][1] for i in range(cutoff_list[counter])], V, colors[counter]  )
+          counter += 1
+      plt.title('Momentum Error vs. ArcLength, initial step dist.: ' + str(G.default_ComputeStep_len))
+      patches = []
+      for i in range(len(stepper_choices)):
+          patches += [mpatches.Patch(color = colors[i], label = stepper_choices[i][1])]
+      plt.legend( patches, [stepper_choices[i][1] for i in range(len(stepper_choices))], loc = 2)
+      if save_file_name != None:
+         plt.savefig(G.Plot_Graphics_DIR + save_file_name + '_momentum_rel_error.png')
+      plt.show()
    #
-   if with_function_evaluation_count == False:
-      return
-   plt.figure()
-   counter = 0
-   for A, function_evals, trajectory in steppers_big_data_list:
-       colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
-       plt.plot( [A[i][1] for i in range(cutoff_list[counter])], function_evals[:cutoff_list[counter]], colors[counter] )
-       counter += 1
-   plt.title('No. Function Calls vs. ArcLength, initial step dist.: ' + str(G.default_ComputeStep_len))
-   patches = []
-   for i in range(len(stepper_choices)):
-       patches += [mpatches.Patch(color = colors[i], label = stepper_choices[i][1])]
-   plt.legend( patches, [stepper_choices[i][1] for i in range(len(stepper_choices))], loc = 2)
-   if save_file_name != None:
-      plt.savefig(G.Plot_Graphics_DIR + save_file_name + '_function_calls.png')
-   plt.show()
+   if with_function_evaluation_count == True:
+      plt.figure()
+      counter = 0
+      for A, function_evals, trajectory in steppers_big_data_list:
+          colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+          plt.plot( [A[i][1] for i in range(cutoff_list[counter])], function_evals[:cutoff_list[counter]], colors[counter] )
+          counter += 1
+      plt.title('No. Function Calls vs. ArcLength, initial step dist.: ' + str(G.default_ComputeStep_len))
+      patches = []
+      for i in range(len(stepper_choices)):
+          patches += [mpatches.Patch(color = colors[i], label = stepper_choices[i][1])]
+      plt.legend( patches, [stepper_choices[i][1] for i in range(len(stepper_choices))], loc = 2)
+      if save_file_name != None:
+         plt.savefig(G.Plot_Graphics_DIR + save_file_name + '_function_calls.png')
+      plt.show()
    
    
 def plot_3dtrajectories( stepper_list, ComputeStep_len, No_steps, tube_rad = 6, with_baseline = False, background = True ):
