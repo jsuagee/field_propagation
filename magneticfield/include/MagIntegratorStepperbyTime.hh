@@ -12,44 +12,17 @@
 #ifndef MAGNETICFIELD_INCLUDE_MAGINTEGRATORSTEPPERBYTIME_HH_
 #define MAGNETICFIELD_INCLUDE_MAGINTEGRATORSTEPPERBYTIME_HH_
 
-
 #include "G4Mag_EqRhs.hh"
 #include "G4MagIntegratorStepper.hh"
 #include "G4ThreeVector.hh"
-
 #include "G4CachedMagneticField.hh"
-
-#include <assert.h>
 #include <vector>
+#include "isTracking.hh"
+#define NO_STATE_VARIABLES 12 // Used as upper bound for statically allocated array
 
 using namespace std;
 
-#include "isTracking.hh"
-
-#define NO_STATE_VARIABLES 12
-
-#ifdef INTENDED_FOR_ERROR_BY_STEPPER_PROGRAM
-
-#define BUFFER_COLUMN_LEN 28 // room for start point and end point of each step
-                             // plus time/arclength entries for each.
-
-#define ENDPOINT_BASE_INDEX 14
-#define POSITION_SLOT 2
-#define MOMENTUM_SLOT 5
-#define RHS_SLOT 8
-
-#else
-#define BUFFER_COLUMN_LEN 22 // room for start point and end point of each step
-                             // plus time/arclength entries for each.
-
-#define ENDPOINT_BASE_INDEX 11
-#define POSITION_SLOT 2
-#define MOMENTUM_SLOT 5
-#define RHS_SLOT 8
-#endif
-
 template <class BaseStepper>
-
 class MagIntegratorStepper_byTime : public BaseStepper {
 public:
    inline
@@ -73,6 +46,8 @@ public:
 private:
    // Needed because Stepper() takes yInput[] and dydx[] as const input
    // but we have to do some scaling modifications in Stepper():
+    // We want these to be statically allocated for faster access.
+    // NO_STATE_VARIABLES is a functioning upper bound to num_variables.
    G4double yIn[NO_STATE_VARIABLES],
             dydx_copy[NO_STATE_VARIABLES];
 
@@ -83,6 +58,8 @@ private:
    G4double nextFunctionEvaluation[NO_STATE_VARIABLES];
 
    G4Mag_EqRhs  *m_fEq;
+    int num_variables;
+    int momentum_variables_index_offset;
 };
 
 
@@ -91,19 +68,23 @@ inline
 void MagIntegratorStepper_byTime<BaseStepper>::ComputeRightHandSide(
                                              const G4double yInput[], G4double dydx[] ) {
 
-   for (int i = 0; i < NO_STATE_VARIABLES; i ++)
+   for (int i = 0; i < num_variables; i ++)
       yIn[i] = yInput[i];
-   for (int i = 3; i < 6; i ++)
-      yIn[i] *= 1. / m_fEq -> FMass();
+
+   G4double current_relativistic_mass = m_fEq -> FMass();
+   G4double rel_mass_inverse = 1. /current_relativistic_mass;
+   for (int i = momentum_variables_index_offset; i < num_variables; i ++)
+      yIn[i] *= rel_mass_inverse;
 
    BaseStepper::ComputeRightHandSide(yIn, dydx);
 
-   for (int i = 3; i < 6; i ++) {      // may want to make this from i = 0, (but really
-                                       // doesn't matter since we're only using this
-                                       // for Nystrom Steppers.
-      dydx[i] *= m_fEq -> FMass();
+   for (int i = momentum_variables_index_offset; i < num_variables; i ++) {
+                                       // may would usually want to make this from i = 0,
+                                       // (but it really doesn't matter since we're only
+                                       // using this for Nystrom Steppers.
+      dydx[i] *= current_relativistic_mass;
    }
-   // Always feed this template class a Mag_UsualEqRhs_IntegrateByTime as EquationRhs.
+   // We always feed this template class a Mag_UsualEqRhs_IntegrateByTime as EquationRhs.
 }
 
 template <class BaseStepper>
@@ -115,24 +96,27 @@ void MagIntegratorStepper_byTime<BaseStepper>::Stepper(const G4double yInput[],
             G4double yError [] ) {
 
    // Have to copy because yInput and dydx are constant in the function signature...
-   for (int i = 0; i < 6; i ++){
+   for (int i = 0; i < num_variables; i ++) {
       yIn[i] = yInput[i];
       dydx_copy[i] = dydx[i];
    }
+
+   G4double current_relativistic_mass = m_fEq -> FMass();
+   G4double rel_mass_inverse = 1. /current_relativistic_mass;
    // ...because now we have to convert to velocity coordinates:
-   for (int i = 3; i < 6; i ++){
-      yIn[i] *= 1. / m_fEq -> FMass();
-      dydx_copy[i] *= 1. / m_fEq -> FMass();
+   for (int i = momentum_variables_index_offset; i < num_variables; i ++) {
+      yIn[i] *= rel_mass_inverse;
+      dydx_copy[i] *= rel_mass_inverse;
    }
 
    /////// Getting velocity for purposes of rescaling the step length:
-   G4double velocity = G4ThreeVector( yIn[3], yIn[4], yIn[5] ).mag();
+   // This is something which is specific to only one particle
+   // so we don't use momentum_variables_index_offset or num_variables:
+   G4double velocity = sqrt( yIn[3]*yIn[3] + yIn[4]*yIn[4] + yIn[5]*yIn[5] );
 
    // Within stepper call, convert hstep (which is in units of arclength)
    // to hstep / velocity (which is units of time).
    BaseStepper::Stepper( yIn, dydx_copy, hstep / velocity, yOutput, yError );
-
-
 
 #ifdef TRACKING
    if ( BaseStepper::mTracker -> get_within_AdvanceChordLimited() ) {
@@ -143,23 +127,13 @@ void MagIntegratorStepper_byTime<BaseStepper>::Stepper(const G4double yInput[],
          // We need the next RHS function evaluation (for the right endpoint of
          // step interval). We need this because it currently is not stored by
          // the stepper (FSAL?)
-
-         // Also, because yOutput is currently in velocity coordinates, we just call
+         //
+         // Since yOutput is currently in velocity coordinates, we just call
          // the BaseStepper::ComputeRightHandSide() method.
          BaseStepper::ComputeRightHandSide(yOutput, nextFunctionEvaluation);
 
-
          // previous function call should not be counted as part of total function calls:
-         BaseStepper::mTracker -> no_function_calls_used_by_DistChord += 1;
-
-
-         // Now we have to undo the effect of Mag_UsualEqRhs_IntegrateByTime
-         // which will scale nextFunctionEvaluation back to momentum coordinates,
-         // so we have to scale back to velocity coordinates before we store it:
-
-         // On second thought I don't think this should be done:
-         //for (int i = 3; i < 6; i ++)
-         //   nextFunctionEvaluation[i] /= m_fEq -> FMass();
+         BaseStepper::mTracker -> add_to_num_other_function_calls_not_to_count(1);
 
          // Getting number of function calls used so far:
          const G4CachedMagneticField *myField = (G4CachedMagneticField*)
@@ -178,9 +152,9 @@ void MagIntegratorStepper_byTime<BaseStepper>::Stepper(const G4double yInput[],
 #endif
 
    // Have to convert back to momentum coordinates.
-   for (int i = 3; i < 6; i ++) {
-      yOutput[i] *= m_fEq -> FMass();
-      yError[i] *= m_fEq -> FMass();      // Temp check to see if we have to scale last 3 coordinates of the error also.
+   for (int i = momentum_variables_index_offset; i < num_variables; i ++) {
+      yOutput[i] *= current_relativistic_mass;
+      yError[i] *= current_relativistic_mass;      // Temp check to see if we have to scale last 3 coordinates of the error also.
    }
 }
 
@@ -188,7 +162,7 @@ template <class BaseStepper>
 inline
 G4double MagIntegratorStepper_byTime<BaseStepper>::DistChord() const{
 
-#ifdef TRACKING
+#ifdef NO_COUNT_FUNCTION_CALLS_FROM_DISTCHORD
    G4int no_function_calls_before_aux_stepper =
            (( G4CachedMagneticField* )( m_fEq -> GetFieldObj() ))
                                                   -> GetCountCalls();
@@ -197,11 +171,11 @@ G4double MagIntegratorStepper_byTime<BaseStepper>::DistChord() const{
 
    G4double dist_chord = BaseStepper::DistChord();
 
-#ifdef TRACKING
+#ifdef NO_COUNT_FUNCTION_CALLS_FROM_DISTCHORD
 
-   BaseStepper::mTracker -> no_function_calls_used_by_DistChord +=
+   BaseStepper::mTracker -> add_to_num_other_function_calls_not_to_count(
           (( G4CachedMagneticField* )( m_fEq -> GetFieldObj() ))
-             -> GetCountCalls() - no_function_calls_before_aux_stepper;
+             -> GetCountCalls() - no_function_calls_before_aux_stepper );
 #endif
 
    return dist_chord;
@@ -214,8 +188,12 @@ inline MagIntegratorStepper_byTime<BaseStepper>::MagIntegratorStepper_byTime(
                                                          G4int numStateVariables)
 : BaseStepper( EquationRhs, numberOfVariables )
 {
+   num_variables = numberOfVariables;
+   momentum_variables_index_offset = num_variables / 2;  // This assumes we have half position
+                                                         // and half momentum variables
    m_fEq = EquationRhs;
-   for (int i = 0; i < NO_STATE_VARIABLES; i ++)
+
+   for (int i = 0; i < num_variables; i ++)
       yIn[i] = 0.;
 }
 template <class BaseStepper>

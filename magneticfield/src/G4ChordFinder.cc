@@ -227,7 +227,7 @@ G4ChordFinder::AdvanceChordLimited( G4FieldTrack& yCurrent,
 
 #ifdef TRACKING
    fIntgrDriver -> GetStepper() -> getTracker() -> initialize_StepTracker(&yCurrent);
-   fIntgrDriver -> GetStepper() -> getTracker() -> record_if_post_intersection_point( yCurrent, startCurveLen );
+   fIntgrDriver -> GetStepper() -> getTracker() -> record_if_post_intersection_point( startCurveLen );
 #endif
 
 

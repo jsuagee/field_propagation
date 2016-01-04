@@ -783,7 +783,7 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
        myStepTracker -> set_stepper_pointer( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper() );
        */
 
-       myStepTracker -> set_mass( proton_mass_c2 ); // Not used?? (Check) Should use relativistic mass
+       myStepTracker -> set_mass( proton_mass_c2 + kineticEnergy); // Not used?? (Check) Should use relativistic mass
                                                       // because it is used to get starting velocity
 
 #endif
