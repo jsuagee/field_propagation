@@ -24,7 +24,7 @@
 class MuruaRKN5459: public G4MagIntegratorStepper {
 public:
    MuruaRKN5459(G4EquationOfMotion *EqRhs,
-         G4int numberOfVariables,
+         G4int numberOfVariables = 6,
          G4bool primary = true);    // Still use an auxilary stepper when
                                     // encountering an intersection pt.
                                     // Because it is more accurate than
@@ -50,7 +50,7 @@ private:
 
    G4bool primary;
 
-   int dimension_of_system; // Number of spacial (or Momentum space) variables.
+   int dim; // Number of spacial (or Momentum space) variables.
 
    G4double
    a21,

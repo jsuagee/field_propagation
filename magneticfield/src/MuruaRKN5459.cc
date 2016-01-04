@@ -27,7 +27,7 @@ MuruaRKN5459::MuruaRKN5459(G4EquationOfMotion *EqRhs,
    : G4MagIntegratorStepper(EqRhs, numberOfVariables),
      fLastStepLength(0.), fAuxStepper(0) {
 
-   dimension_of_system = numberOfVariables / 2;
+   dim = numberOfVariables / 2;
    primary = primary_status;
 
    myField_as_storeBfield = dynamic_cast<MagEqRhs_byTime_storeB*>(GetEquationOfMotion());
@@ -135,8 +135,8 @@ void MuruaRKN5459::ComputeRhsWithStoredB( const G4double y[],
                                           //const G4double B[3],
                                           G4double dydx[] )
 {
-   // Note: would have to modify this, and ComputeRightHandSide(), for a multi-particle
-   // system anyway. num_variables and momentum_variables_index_offset are supplied
+   // Note: would have to modify this, and ComputeRightHandSide(),
+   // for a multi-particle system anyway. dim is supplied
    // for later development convenience.
 
    G4double cof = myField_as_storeBfield -> FCof();
@@ -237,111 +237,118 @@ void MuruaRKN5459::Stepper(  const G4double y[],
    position_interpolant -> DeInitialize();
 
    int k;
-   for (k = 0; k < 3; k ++) {
+   for (k = 0; k < dim; k ++) {
       q0[k] = y[k];
-      v0[k] = y[k + 3];
-      Vdot1[k + 3] = dydx[k + 3];
+      v0[k] = y[k + dim];
+      Vdot1[k +dim] = dydx[k + dim];
    }
 
-   for (k = 0; k < 3; k ++) {
-      ytemp[k] = q0[k] + h*c2*v0[k] + h*h*(alpha21*Vdot1[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k-dim] = q0[k-dim] + h*c2*v0[k-dim] + h*h*(alpha21*Vdot1[k]);
    }
-   for (k = 0; k < 3; k ++) {
-      ytemp[k + 3] = v0[k]+h*(a21*Vdot1[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k] = v0[k-dim]+h*(a21*Vdot1[k]);
    }
    RightHandSide(ytemp, Vdot2);
    // Duplicate!: using last Q_i value
-   for (k = 0; k < 3; k ++) {
-      ytemp[k + 3] = v0[k]+h*(a31*Vdot1[k+3] + a32*Vdot2[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k] = v0[k-dim]+h*(a31*Vdot1[k] + a32*Vdot2[k]);
    }
 
    // Use last B field Evaluation
    ComputeRhsWithStoredB(ytemp, Vdot3);
-   for (k = 0; k < 3; k ++) {
-      ytemp[k] = q0[k] + h*c4*v0[k] + h*h*(alpha41*Vdot1[k+3]+alpha42*Vdot2[k+3]+alpha43*Vdot3[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k-dim] = q0[k-dim] + h*c4*v0[k-dim] + h*h*(alpha41*Vdot1[k]+alpha42*Vdot2[k]+alpha43*Vdot3[k]);
    }
-   for (k = 0; k < 3; k ++) {
-      ytemp[k + 3] = v0[k]+h*(a41*Vdot1[k+3] + a42*Vdot2[k+3] + a43*Vdot3[k+3]);
+
+
+   ///////////////////////////////
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k] = v0[k-dim]+h*(a41*Vdot1[k] + a42*Vdot2[k] + a43*Vdot3[k]);
    }
    RightHandSide(ytemp, Vdot4);
-   for (k = 0; k < 3; k ++) {
-      ytemp[k] = q0[k] + h*c5*v0[k] + h*h*(alpha51*Vdot1[k+3]+alpha52*Vdot2[k+3]+alpha53*Vdot3[k+3]
-                                           +alpha54*Vdot4[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k-dim] = q0[k-dim] + h*c5*v0[k-dim] + h*h*(alpha51*Vdot1[k]+alpha52*Vdot2[k]+alpha53*Vdot3[k]
+                                           +alpha54*Vdot4[k]);
    }
-   for (k = 0; k < 3; k ++) {
-      ytemp[k + 3] = v0[k]+h*(a51*Vdot1[k+3] + a52*Vdot2[k+3] + a53*Vdot3[k+3] + a54*Vdot4[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k] = v0[k-dim]+h*(a51*Vdot1[k] + a52*Vdot2[k] + a53*Vdot3[k] + a54*Vdot4[k]);
    }
    RightHandSide(ytemp, Vdot5);
    // Duplicate!: using last Q_i value
-   for (k = 0; k < 3; k ++) {
-      ytemp[k + 3] = v0[k]+h*(a61*Vdot1[k+3] + a62*Vdot2[k+3] + a63*Vdot3[k+3] + a64*Vdot4[k+3]
-                              + a65*Vdot5[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k] = v0[k-dim]+h*(a61*Vdot1[k] + a62*Vdot2[k] + a63*Vdot3[k] + a64*Vdot4[k]
+                              + a65*Vdot5[k]);
    }
    // Use last B field Evaluation
    ComputeRhsWithStoredB(ytemp, Vdot6);
-   for (k = 0; k < 3; k ++) {
-      ytemp[k] = q0[k] + h*c7*v0[k] + h*h*(alpha71*Vdot1[k+3]+alpha72*Vdot2[k+3]+alpha73*Vdot3[k+3]
-                                           +alpha74*Vdot4[k+3]+alpha75*Vdot5[k+3]+alpha76*Vdot6[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k-dim] = q0[k-dim] + h*c7*v0[k-dim] + h*h*(alpha71*Vdot1[k]+alpha72*Vdot2[k]+alpha73*Vdot3[k]
+                                           +alpha74*Vdot4[k]+alpha75*Vdot5[k]+alpha76*Vdot6[k]);
    }
-   for (k = 0; k < 3; k ++) {
-      ytemp[k + 3] = v0[k]+h*(a71*Vdot1[k+3] + a72*Vdot2[k+3] + a73*Vdot3[k+3] + a74*Vdot4[k+3]
-                              + a75*Vdot5[k+3] + a76*Vdot6[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k] = v0[k-dim]+h*(a71*Vdot1[k] + a72*Vdot2[k] + a73*Vdot3[k] + a74*Vdot4[k]
+                              + a75*Vdot5[k] + a76*Vdot6[k]);
    }
    RightHandSide(ytemp, Vdot7);
    // Duplicate!: using last Q_i value
-   for (k = 0; k < 3; k ++) {
-      ytemp[k + 3] = v0[k]+h*(a81*Vdot1[k+3] + a82*Vdot2[k+3] + a83*Vdot3[k+3] + a84*Vdot4[k+3]
-                              + a85*Vdot5[k+3] + a86*Vdot6[k+3] + a87*Vdot7[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k] = v0[k-dim]+h*(a81*Vdot1[k] + a82*Vdot2[k] + a83*Vdot3[k] + a84*Vdot4[k]
+                              + a85*Vdot5[k] + a86*Vdot6[k] + a87*Vdot7[k]);
    }
    // Use last B field Evaluation
    ComputeRhsWithStoredB(ytemp, Vdot8);
-   for (k = 0; k < 3; k ++) {
-      ytemp[k] = q0[k] + h*c9*v0[k] + h*h*(alpha91*Vdot1[k+3]+alpha92*Vdot2[k+3]+alpha93*Vdot3[k+3]
-                                           +alpha94*Vdot4[k+3]+alpha95*Vdot5[k+3]+alpha96*Vdot6[k+3]
-                                           +alpha97*Vdot7[k+3]+alpha98*Vdot8[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k-dim] = q0[k-dim] + h*c9*v0[k-dim] + h*h*(alpha91*Vdot1[k]+alpha92*Vdot2[k]+alpha93*Vdot3[k]
+                                           +alpha94*Vdot4[k]+alpha95*Vdot5[k]+alpha96*Vdot6[k]
+                                           +alpha97*Vdot7[k]+alpha98*Vdot8[k]);
    }
-   for (k = 0; k < 3; k ++) {
-      ytemp[k + 3] = v0[k]+h*(a91*Vdot1[k+3] + a92*Vdot2[k+3] + a93*Vdot3[k+3] + a94*Vdot4[k+3]
-                              + a95*Vdot5[k+3] + a96*Vdot6[k+3] + a97*Vdot7[k+3] + a98*Vdot8[k+3]);
+   for (k = dim; k < 2*dim; k ++) {
+      ytemp[k] = v0[k-dim]+h*(a91*Vdot1[k] + a92*Vdot2[k] + a93*Vdot3[k] + a94*Vdot4[k]
+                              + a95*Vdot5[k] + a96*Vdot6[k] + a97*Vdot7[k] + a98*Vdot8[k]);
    }
    RightHandSide(ytemp, Vdot9);
 
    G4double temp_var;
 
    // Just copy position values into yout[0..2]:
-   for (k = 0; k < 3; k ++) {
-      yout[k] = ytemp[k];
+   for (k = dim; k < 2*dim; k ++) {
+      yout[k-dim] = ytemp[k-dim];
    }
-   for (k = 3; k < 6; k ++) {
+
+
+
+   /////////////////////////
+   for (k = dim; k < 2*dim; k ++) {
       temp_var = b1*Vdot1[k] + b2*Vdot2[k] + b3*Vdot3[k] + b4*Vdot4[k] + b5*Vdot5[k] + b6*Vdot6[k]
                  + b7*Vdot7[k] + b8*Vdot8[k] + b9*Vdot9[k];
-      yout[k] = v0[k - 3] + h*temp_var;
+      yout[k] = v0[k - dim] + h*temp_var;
    }
 
    // Error:
    ComputeRhsWithStoredB(yout, Vdot10);
 
-   for (k = 3; k < 6; k ++) {
+   for (k = dim; k < 2*dim; k ++) {
          temp_var = beta_err1*Vdot1[k] + beta_err2*Vdot2[k] + beta_err3*Vdot3[k] + beta_err4*Vdot4[k]
                     + beta_err5*Vdot5[k] + beta_err6*Vdot6[k] + beta_err7*Vdot7[k] + beta_err8*Vdot8[k]
                     + beta_err9*Vdot9[k] + beta_err10*Vdot10[k];
-         yerr[k - 3] = h*h*temp_var;
+         yerr[k - dim] = h*h*temp_var;
       }
-   for (k = 3; k < 6; k ++) {
+   for (k = dim; k < 2*dim; k ++) {
       temp_var = berr1*Vdot1[k] + berr2*Vdot2[k] + berr3*Vdot3[k] + berr4*Vdot4[k] + berr5*Vdot5[k]
                  + berr6*Vdot6[k] + berr7*Vdot7[k] + berr8*Vdot8[k] + berr9*Vdot9[k] + berr10*Vdot10[k];
       yerr[k] = h*temp_var;
    }
 
    //last_step_len = h;
-   for(int i = 0; i < 6; i ++ )
+   for(int i = 0; i < 2*dim; i ++ )
    {
       fLastInitialVector[i] = y[i] ;
       fLastFinalVector[i]   = yout[i];
    }
-   for (int i = 0; i < 3; i ++ ) {
-      fLastDyDx[i + 3]  = dydx[i + 3];        // Switch back to i from "i + 3" when going
-      fNextDyDx[i + 3]  = Vdot10[i + 3];      // back to using interpolation. Same comment as above.
+   for (int i = 0; i < dim; i ++ ) {
+      fLastDyDx[i + dim]  = dydx[i + dim];        // Switch back to i from "i + dim" when going
+      fNextDyDx[i + dim]  = Vdot10[i + dim];      // back to using interpolation. Same comment as above.
    }
 
    fLastStepLength = h;
