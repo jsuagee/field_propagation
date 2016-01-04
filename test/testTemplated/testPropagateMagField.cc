@@ -183,7 +183,13 @@ void read_args(int argc, char **argv) {
             intersection_indices_filename = argv[arg_counter + 5];
             overshoot_segments = argv[arg_counter + 6];
             arg_counter += 7;
-            //cout << setw(20) <<
+         }
+      }
+#else
+      // If not using StepTracker then bypass any related input:
+      if (argc > arg_counter) {
+         if (std::string(argv[arg_counter]) == "file_store_info") {
+            arg_counter += 7;
          }
       }
 #endif
@@ -578,14 +584,14 @@ G4PropagatorInField *pMagFieldPropagator=0;
 //
 // Test Stepping
 //
-G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode, 
+G4bool testG4PropagatorInField(G4VPhysicalVolume*    // *pTopNode,
 			       //G4int             type, // Is not used
 			       //G4double          compute_step_len,
 			       //G4int             no_steps,
 			       //G4double          largest_possible_step
 
 #ifdef TRACKING
-			       char *tPMF_output_filename = 0,
+			       ,char *tPMF_output_filename = 0,
 			       char *tPMF_meta_output_filename = 0,
 			       char *tPMF_no_function_calls_filename = 0,
 			       char *tPMF_no_function_calls_overshoot_filename = 0,
@@ -622,8 +628,8 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 
 
     // Added by J. Suagee: (EquationOfMotion was not getting set in a constructor somewhere)
-    //( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper())
-    //        ->SetEquationOfMotion(fEquation);
+    ( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper())
+            ->SetEquationOfMotion(fEquation);
 
     if (stepper_type == 0)
        dynamic_cast< MagIntegratorStepper_byTime<MuruaRKN5459>* >
@@ -771,10 +777,12 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 	  }
 	  assert( MoveVec.mag() < physStep*(1.+1.e-9) );
 
-	  //G4cout << " testPropagatorInField: After stepI " << istep  << " : " << G4endl;
-	  //report_endPV(Position, UnitMomentum, step_len, physStep, safety,
-	  //     EndPosition, EndUnitMomentum, istep, located, myMagField.GetCountCalls() );
 
+#ifndef TRACKING
+      G4cout << " testPropagatorInField: After stepI " << istep  << " : " << G4endl;
+	   report_endPV(Position, UnitMomentum, step_len, physStep, safety,
+	       EndPosition, EndUnitMomentum, istep, located, myMagField_ptr -> GetCountCalls() );
+#endif
 
 	  assert(safety>=0);
 	  pNavig->SetGeometricallyLimitedStep();
@@ -785,9 +793,14 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 	  Position= EndPosition;
 	  UnitMomentum= EndUnitMomentum;
 	  physStep *= 1.;
-       } // ...........................  end for ( istep )
-       //G4cout << "=============="<<total<<"================="<<G4endl;
-       //myMagField_ptr -> ReportStatistics();
+       }
+
+#ifndef TRACKING
+   // ...........................  end for ( istep )
+       G4cout << "=============="<<total<<"================="<<G4endl;
+       myMagField_ptr -> ReportStatistics();
+#endif
+
        myMagField_ptr -> ClearCounts(); // J. Suagee
 
         // ..............................  end for ( iparticle )

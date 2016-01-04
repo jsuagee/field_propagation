@@ -1,5 +1,6 @@
 // isTracking.hh
 // central place to turn on/off TRACKING switch
+
 #define TRACKING
 
 #define BUFFER_COLUMN_LEN 22     // room for start point and end point of each step
