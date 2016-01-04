@@ -28,7 +28,7 @@ using namespace std;
 #define IGNORING_DIST_CHORD_FUNCTION_CALLS
 
 
-//#define TOL 0.00000001
+#define TOL 0.00000001
 
 
 //StepTracker::StepTracker(G4double beginning[BUFFER_COLUMN_LEN]) {
