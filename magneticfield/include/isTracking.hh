@@ -9,4 +9,6 @@
 #define MOMENTUM_SLOT 5
 #define RHS_SLOT 8
 
+// Uncomment to test number used function calls supposing interpolation methods in
+// DistChord() were available:
 //#define NO_COUNT_FUNCTION_CALLS_FROM_DISTCHORD

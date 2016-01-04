@@ -27,6 +27,7 @@ MuruaRKN5459::MuruaRKN5459(G4EquationOfMotion *EqRhs,
    : G4MagIntegratorStepper(EqRhs, numberOfVariables),
      fLastStepLength(0.), fAuxStepper(0) {
 
+   dimension_of_system = numberOfVariables / 2;
    primary = primary_status;
 
    myField_as_storeBfield = dynamic_cast<MagEqRhs_byTime_storeB*>(GetEquationOfMotion());
@@ -134,6 +135,10 @@ void MuruaRKN5459::ComputeRhsWithStoredB( const G4double y[],
                                           //const G4double B[3],
                                           G4double dydx[] )
 {
+   // Note: would have to modify this, and ComputeRightHandSide(), for a multi-particle
+   // system anyway. num_variables and momentum_variables_index_offset are supplied
+   // for later development convenience.
+
    G4double cof = myField_as_storeBfield -> FCof();
    cof /= myField_as_storeBfield -> FMass();   // Correction because we are using
                                 // dynamic variables position and velocity (not momentum).
@@ -158,6 +163,8 @@ void MuruaRKN5459::ComputeRhsWithStoredB( const G4double y[],
 
 G4double  MuruaRKN5459::DistChord()   const {
 
+#ifdef TRACKING      // Better results to use auxillary stepper at an intersection pt.
+                     // Should implement this without relying on TRACKING flag though.
    if ( !mTracker->get_within_AdvanceChordLimited() ) {
       G4double distLine, distChord;
       G4ThreeVector initialPoint, finalPoint, midPoint;
@@ -189,6 +196,8 @@ G4double  MuruaRKN5459::DistChord()   const {
       return distChord;
    }
    else {
+#endif
+
       // Implementation to use if interpolant is initialized (i.e. for non-intersection pts.
       G4double distLine, distChord;
       // Store last initial and final points (they will be overwritten in self-Stepper call!)
@@ -214,7 +223,9 @@ G4double  MuruaRKN5459::DistChord()   const {
          distChord = (midPoint - initialPoint).mag();
       }
       return distChord;
+#ifdef TRACKING
    }
+#endif
 }
 
 void MuruaRKN5459::Stepper(  const G4double y[],

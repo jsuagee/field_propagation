@@ -50,6 +50,8 @@ private:
 
    G4bool primary;
 
+   int dimension_of_system; // Number of spacial (or Momentum space) variables.
+
    G4double
    a21,
    a31, a32,

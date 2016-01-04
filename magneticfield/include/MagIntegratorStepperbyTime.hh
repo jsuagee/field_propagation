@@ -58,8 +58,8 @@ private:
    G4double nextFunctionEvaluation[NO_STATE_VARIABLES];
 
    G4Mag_EqRhs  *m_fEq;
-    int num_variables;
-    int momentum_variables_index_offset;
+   int num_variables;
+   int momentum_variables_index_offset;
 };
 
 
