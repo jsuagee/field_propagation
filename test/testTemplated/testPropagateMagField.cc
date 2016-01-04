@@ -282,9 +282,6 @@ G4VPhysicalVolume* BuildGeometry()
 	G4LogicalVolume *tinyBoxLog=new G4LogicalVolume(myTinyBox,0,
 			"Crystal Box (tiny)");
 
-
-	///* Disable all geometry for a test
-
 	if (geometry_on) {
 
       //  Place them.
@@ -357,11 +354,9 @@ G4VPhysicalVolume* BuildGeometry()
          (0,G4ThreeVector(-0.3*m, 0.3*m,-0.3*m), "Target 4h",tinyBoxLog,
 		 worldPhys,false,0);
 	}
-   //*/
 
 	return worldPhys;
 }
-
 
 #include "G4UniformMagField.hh"
 #include "G4QuadrupoleMagField.hh"
@@ -393,8 +388,7 @@ G4VPhysicalVolume* BuildGeometry()
 #include "BogackiShampine45.hh"
 #include "DormandPrince745.hh"
 
-//#include "TsitourasRK45.hh"
-
+// Nystrom header files:
 #include "MagIntegratorStepperbyTime.hh"
 #include "Mag_UsualEqRhs_IntegrateByTime.hh"
 #include "MagEqRhsbyTimestoreB.hh"
@@ -403,13 +397,8 @@ G4VPhysicalVolume* BuildGeometry()
 #include "FineRKNG45.hh"
 #include "MuruaRKN6459.hh"
 #include "MuruaRKN5459.hh"
-
 #include "ChawlaSharmaRKNstepper.hh"
-
-
-//#include "StepTracker_convertArcLengthToTime.hh"
 #include "MagIntegratorStepperByArcLength.hh"
-
 
 /*
 //=============test template mode================
@@ -438,29 +427,12 @@ typedef TExplicitEuler<Equation_t, 6> StepperExEuler_t;
 //Field_t  tMagField( &tQuadrupoleMagField, 1.0 * cm);
 //===================================h============
 
-
-//G4UniformMagField      uniformMagField(1.*tesla, 0., 0.);
-
-
-G4UniformMagField *uniformMagField_ptr;
-//G4UniformMagField      uniformMagField( G4ThreeVector(0.0 * tesla, 0.0 * tesla, -1. * tesla) );
-//G4CachedMagneticField  myUniformCachedMagField( &uniformMagField, 0.0 * cm);
-//G4String   fieldName("Uniform -1.0 Tesla");
-
+G4UniformMagField *uniformMagField_ptr;;
 G4QuadrupoleMagField *quadrupoleMagField_ptr;
-//G4QuadrupoleMagField   quadrupoleMagField( 10.*tesla/(50.*cm) );
-//G4CachedMagneticField  myQuadropoleCachedMagField( &quadrupoleMagField, 0.0 * cm);
-//G4String   fieldName("Cached Quadropole field, 20T/meter, cache=1cm");
-
 G4CachedMagneticField *myMagField_ptr;
 
-
 G4String fieldName;
-
-//G4Mag_UsualEqRhs *fEquation;
 G4Mag_EqRhs *fEquation;
-
-//Mag_UsualEqRhs_IntegrateByTime *fEquation_byTime;
 
 G4FieldManager* SetupField(G4int type)
 {
@@ -483,13 +455,8 @@ G4FieldManager* SetupField(G4int type)
 
 	G4FieldManager   *pFieldMgr;
 	G4ChordFinder    *pChordFinder;
-	//Mag_UsualEqRhs_IntegrateByTime *fEquation = new Mag_UsualEqRhs_IntegrateByTime(&myMagField);
 
-	//G4Mag_UsualEqRhs *fEquation = new G4Mag_UsualEqRhs(&myMagField);
-	//fEquation = new G4Mag_UsualEqRhs(&myMagField);
-
-	//fEquation = new Mag_UsualEqRhs_IntegrateByTime(&myMagField);
-
+   // Removed the test of templated code;
 	//=============test template mode================
 	//Equation_t *tEquation = new Equation_t(&tMagField);
 	//===============================================
@@ -497,6 +464,8 @@ G4FieldManager* SetupField(G4int type)
 	G4MagIntegratorStepper *pStepper;
 
 	//G4cout << " Setting up field of type: " << fieldName << G4endl;
+
+   // Not all of these steppers work for this program:
 	switch ( stepper_type )
 	{
 	   case -1: // will currently fail because DistChord() uses the wrong interpolant!
@@ -705,15 +674,11 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 
 
        Position = G4ThreeVector( pos_input[0]*mm, pos_input[1]*mm, pos_input[2]*mm)
-       //Position = G4ThreeVector(100.*mm,100.*mm,0.*mm)
-       //Position = G4ThreeVector(-100.*mm, 50.*mm, 150.*mm)
 	        + iparticle * G4ThreeVector(0.2, 0.3, 0.4); 
 
        UnitMomentum = (G4ThreeVector(mom_dir[0],mom_dir[1],mom_dir[2])
-       //UnitMomentum = (G4ThreeVector(0.2,0.6,0.8)
 		    + (float)iparticle * G4ThreeVector(0.1, 0.2, 0.3)).unit();
 
-       //G4double momentum = (0.5+iparticle*10.0) * proton_mass_c2;
        G4double momentum = (input_momentum + iparticle*10.0) * proton_mass_c2;
 
 
@@ -724,83 +689,30 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 
 
        G4double velocity = momentum / ( proton_mass_c2 + kineticEnergy );
-       // Try this
-       //G4double velocity = momentum / proton_mass_c2;
-
-
        //////// Some additions: (Not sure about this. Should this be the non-relativistic mass?)
        G4double mass = proton_mass_c2; // + kineticEnergy;
 
-       //if ( have_to_convert_arc_length_to_time ) { // is true if integrating w.r.t. arc length
-       //    physStep *= velocity; // Converts to time
-       //}
-
-
-       //cout.precision(20);
-       //cout << "Relativistic mass of particle (is constant for our field): " << proton_mass_c2 + kineticEnergy << endl;
-
-
        fEquation->SetChargeMomentumMass(chargeState,
               momentum,
-              //momentum magnitude
               mass);
 
 #ifdef TRACKING
 
-   /*
-       G4double beginning[10] = { Position.x(), Position.y(), Position.z(),
-                    UnitMomentum.x() * momentum, UnitMomentum.y() * momentum,
-                    UnitMomentum.z() * momentum, 0., 0., 0., 0. };
-       G4double *Rhs = new G4double[10];
-       ( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper() )
-          -> ComputeRightHandSide(beginning, Rhs);
-
-
-       G4double stepTracker_1st_entry[11] = { 0., 0., Position.x(), Position.y(), Position.z(),
-                                  UnitMomentum.x() * momentum/mass,
-                                  UnitMomentum.y() * momentum/mass,
-                                  UnitMomentum.z() * momentum/mass,
-                                  Rhs[3]/mass, Rhs[4]/mass, Rhs[5]/mass };
-
-       StepTracker *myStepTracker;
-
-       myStepTracker = new StepTracker( stepTracker_1st_entry );
-   */
        StepTracker *myStepTracker = new StepTracker();
-
 
        ( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper() )
            -> setTracker(myStepTracker);
-       /*
-       ( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver() )
-               -> setTracker(myStepTracker);
-
-
-       ( pMagFieldPropagator->GetChordFinder() )
-               -> setTracker(myStepTracker);
-
-
-       myStepTracker -> set_stepper_pointer( pMagFieldPropagator->GetChordFinder()->GetIntegrationDriver()->GetStepper() );
-       */
 
        myStepTracker -> set_mass( proton_mass_c2 + kineticEnergy); // Not used?? (Check) Should use relativistic mass
                                                       // because it is used to get starting velocity
-
 #endif
-
-
        G4double labTof= 10.0*ns, properTof= 0.1*ns;
        G4ThreeVector Spin(1.0, 0.0, 0.0);
                                                    // Momentum in Mev/c ?
 
-
-//#ifdef TRACKING
        G4double last_curve_length = 0;
-//#endif
-
 
        // To limit step size for Baseline:
-
 
        if (largest_possible_step != -1.0) {
 
@@ -816,18 +728,13 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 
        clock_t total = 0;
    for( int istep=0; istep < number_ComputeSteps; istep++ ){
-       // G4cerr << "UnitMomentum Magnitude is " << UnitMomentum.mag() << G4endl;
 	  located = pNavig->LocateGlobalPointAndSetup(Position);
 	  // G4cerr << "Starting Step " << istep << " in volume " 
 	       // << located->GetName() << G4endl;
 
           G4FieldTrack  initTrack( Position, 
 				   UnitMomentum,
-//#ifdef TRACKING
 				   last_curve_length, //0.0,            // starting S curve len
-//#else
-//				   0.,
-//#endif
 				   kineticEnergy,
 				   proton_mass_c2,
 				   velocity,
@@ -838,10 +745,7 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 		  clock_t t;
 		  t = clock(); 
 
-
-//#ifdef TRACKING
 		  initTrack.SetCurveLength(last_curve_length);
-//#endif
 
 
 	  step_len=pMagFieldPropagator->ComputeStep( initTrack, 
@@ -850,9 +754,6 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 						     located );
 
 	  total += clock() - t;
-
-	  // myStepTracker -> start_next_at_beginning();
-
 
 	  //       --------------------
 	  EndPosition=     pMagFieldPropagator->EndPosition();
@@ -870,7 +771,7 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 	  }
 	  assert( MoveVec.mag() < physStep*(1.+1.e-9) );
 
-	  //4cout << " testPropagatorInField: After stepI " << istep  << " : " << G4endl;
+	  //G4cout << " testPropagatorInField: After stepI " << istep  << " : " << G4endl;
 	  //report_endPV(Position, UnitMomentum, step_len, physStep, safety,
 	  //     EndPosition, EndUnitMomentum, istep, located, myMagField.GetCountCalls() );
 
@@ -879,11 +780,7 @@ G4bool testG4PropagatorInField(G4VPhysicalVolume*,     // *pTopNode,
 	  pNavig->SetGeometricallyLimitedStep();
 	  // pMagFieldPropagator->SetGeometricallyLimitedStep();
 
-//#ifdef TRACKING
 	  last_curve_length += step_len; //initTrack.GetCurveLength();
-	  //cout << " Last Curve Length: " << last_curve_length << endl;
-	  //cout << " Curve Length: " << initTrack.GetCurveLength() << endl;
-//#endif
 
 	  Position= EndPosition;
 	  UnitMomentum= EndUnitMomentum;
@@ -926,7 +823,6 @@ void report_endPV(G4ThreeVector    Position,
 	//   G4VPhysicalVolume* endVolume)
 {
 	const G4int verboseLevel=1;
-
 
 	if( Step == 0 && verboseLevel <= 3 )
 	{
@@ -1001,10 +897,6 @@ void report_endPV(G4ThreeVector    Position,
 	}
 }
 
-
-
-
-
 // Main program
 // -------------------------------
 int main(int argc, char **argv)
@@ -1017,7 +909,7 @@ int main(int argc, char **argv)
 
     read_args(argc, argv);
 
-
+   // Commented out this for this version of tPMF
     //G4double step_len;
     //G4int no_steps;
 

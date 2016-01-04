@@ -52,7 +52,7 @@ private:
    G4double q1[3], q2[3], q3[3], q4[3];
 
    int dim; // Number of spacial (or Momentum space) variables.
-   
+
    bool position_polynomials_constructed;
    bool velocity_polynomials_constructed;
 
