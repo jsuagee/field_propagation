@@ -439,7 +439,7 @@ def plot_relative_errors(stepper_list, with_function_evaluation_count = False, w
    for i in range(len(stepper_choices)):
        patches += [mpatches.Patch(color = colors[i], label = stepper_choices[i][1])]
    plt.legend( patches, [stepper_choices[i][1] for i in range(len(stepper_choices))], loc = 2)
-   plt.show()
+   #plt.show()
    if save_file_name != None:
       plt.savefig(G.Plot_Graphics_DIR + save_file_name + '_position_rel_error.png')
    plt.show()

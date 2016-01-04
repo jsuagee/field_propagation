@@ -113,6 +113,7 @@ void MagIntegratorStepper_byArcLength<BaseStepper>::Stepper(const G4double yInpu
          // If this works should make nextFunctionEvaluation a member variable:
 
          BaseStepper::ComputeRightHandSide(yOutput, nextFunctionEvaluation);
+         BaseStepper::mTracker -> add_to_num_other_function_calls_not_to_count(1);
 
          // Want to store velocity, not momentum.
          for (int i = 3; i < 6; i ++)
